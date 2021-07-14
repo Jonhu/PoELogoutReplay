@@ -65,20 +65,25 @@ func main() {
 		case <-ticker.C:
 			binding = findPoeBinding()
 			//log.Printf("%v", findPoeBinding())
-			if !binding.eq(previousBinding) && binding.srcip != "" {
+			if !binding.eq(previousBinding) && binding.srcip != "" && binding.destport != 443 { //we can sometimes capure in client https
 				if !init {
 					init = true
 					i <- struct{}{}
 				}
 				if *filterStr == "" {
-					filter = fmt.Sprintf("tcp[tcpflags] & (tcp-rst|tcp-ack) == (tcp-rst|tcp-ack) and tcp src port %d and tcp dst port %d and dst host %s", binding.srcport, binding.destport, binding.destip)
+					filter = fmt.Sprintf("tcp[tcpflags] & (tcp-rst|tcp-ack) == (tcp-rst|tcp-ack) and tcp src port %d and tcp dst port %d and dst host %s",
+						binding.srcport, binding.destport, binding.destip)
 				}
 				handle, err = pcap.OpenLive(binding.device, 1024, false, *flushDuration/2)
 				if err != nil {
 					log.Printf("Error opening pcap handle: %s", err)
+					ticker.Reset(*instancePollDur)
+					continue
 				}
 				if err := handle.SetBPFFilter(filter); err != nil {
 					log.Printf("Error setting BPF filter: %s", err)
+					done <- true
+					continue
 				}
 				previousBinding = binding
 			}
@@ -89,13 +94,17 @@ func main() {
 				time.Sleep(*packetPollDur)
 				i <- struct{}{}
 			} else {
+				handle.SetDirection(pcap.DirectionIn) // let's not capture our own packets
 				for repeatSend := 0; repeatSend < *repeats; repeatSend++ {
 					//log.Printf("received package: %v", data)
 					if err := handle.WritePacketData(data); err != nil {
-						log.Printf("Error: %v", err)
+						log.Printf("Error writing packet: %v", err)
+						handle.SetDirection(pcap.DirectionInOut)
+						continue
 					}
 					time.Sleep(*logoutSpreadDur)
 				}
+				handle.SetDirection(pcap.DirectionInOut)
 				init = false
 			}
 		}
@@ -113,6 +122,7 @@ func findPoeBinding() poeBinding {
 	})
 	if err != nil {
 		log.Printf("error getting PoE process: %v", err)
+		return poeBinding{}
 	}
 	for _, device := range devices {
 		for _, address := range device.Addresses {
