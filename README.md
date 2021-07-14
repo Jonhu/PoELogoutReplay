@@ -21,5 +21,6 @@ In the root directory:
 For more options please run ```PoELogoutReplay.exe --help```
 
 # TODO
+* Error handling
 * Measure performance impact
 * Test on different systems for device/interface/process grabbing.
