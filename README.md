@@ -22,3 +22,4 @@ For more options please run ```PoELogoutReplay.exe --help```
 
 # TODO
 * Test on different systems for device/interface/process grabbing.
+* Hide cmd window and make it a tray appilcation
