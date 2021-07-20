@@ -10,11 +10,17 @@ import (
 	"time"
 
 	"github.com/cakturk/go-netstat/netstat"
+	"github.com/getlantern/systray"
+	"github.com/getlantern/systray/example/icon"
 	"github.com/google/gopacket/pcap"
 )
 
+//go build -ldflags -H=windowsgui
 const POE_STEAM string = "PathOfExileSteam.exe"
 const POE_STANDALONE string = "PathOfExile.exe"
+const version = "0.1"
+
+var done chan bool
 
 type poeBinding struct {
 	destip   string
@@ -28,14 +34,36 @@ func (p *poeBinding) eq(p2 poeBinding) bool {
 	return p.srcport == p2.srcport && p.destport == p2.destport && p.srcip == p2.srcip && p.device == p2.device && p.destip == p2.destip
 }
 
+func onReady() {
+	systray.SetIcon(icon.Data) //default icon for now
+	systray.SetTitle("PoELogoutReplay")
+	systray.SetTooltip("Replays Logout packets of PoE")
+	mQuit := systray.AddMenuItem("Quit", "Quit Logout Replay")
+
+	mQuit.SetIcon(icon.Data) //default icon for now
+	go func() {
+		select {
+		case <-mQuit.ClickedCh:
+			systray.Quit()
+		}
+	}()
+}
+
+func onExit() {
+	done <- true
+	os.Exit(0)
+}
+
 func main() {
+	systray.Run(onReady, onExit)
+
 	flushDuration := flag.Duration("fl", 69*time.Millisecond, "flush duration of pcap capture")
 	repeats := flag.Int("r", 3, "amount of logout repeats")
 	instancePollDur := flag.Duration("ip", 1*time.Second, "time waiting between instance data poll")
 	logoutSpreadDur := flag.Duration("lp", 200*time.Millisecond, "time waiting between logout packets")
 	packetPollDur := flag.Duration("pp", 69*time.Millisecond, "time waiting between polls")
 	filterStr := flag.String("fi", "", "BPF filter string")
-
+	log.Printf("PoELogoutReplay version %s, use CTRL+C to exit", version)
 	flag.Parse()
 
 	var handle *pcap.Handle
@@ -61,11 +89,11 @@ func main() {
 	for {
 		select {
 		case <-done:
+			systray.Quit()
 			return
 		case <-ticker.C:
 			binding = findPoeBinding()
-			//log.Printf("%v", findPoeBinding())
-			if !binding.eq(previousBinding) && binding.srcip != "" && binding.destport != 443 { //we can sometimes capure in client https
+			if !binding.eq(previousBinding) && binding.srcip != "" && binding.destport != 443 { //we can sometimes capture in client https
 				if !init {
 					init = true
 					i <- struct{}{}
@@ -82,7 +110,7 @@ func main() {
 				}
 				if err := handle.SetBPFFilter(filter); err != nil {
 					log.Printf("Error setting BPF filter: %s", err)
-					done <- true
+					done <- true //can't recover from malformed filter
 					continue
 				}
 				previousBinding = binding
@@ -96,7 +124,6 @@ func main() {
 			} else {
 				handle.SetDirection(pcap.DirectionIn) // let's not capture our own packets
 				for repeatSend := 0; repeatSend < *repeats; repeatSend++ {
-					//log.Printf("received package: %v", data)
 					if err := handle.WritePacketData(data); err != nil {
 						log.Printf("Error writing packet: %v", err)
 						handle.SetDirection(pcap.DirectionInOut)
@@ -114,7 +141,8 @@ func main() {
 func findPoeBinding() poeBinding {
 	devices, err := pcap.FindAllDevs()
 	if err != nil {
-		log.Fatal(err)
+		log.Printf("error getting devices: %v", err)
+		return poeBinding{}
 	}
 
 	tabs, err := netstat.TCPSocks(func(s *netstat.SockTabEntry) bool {

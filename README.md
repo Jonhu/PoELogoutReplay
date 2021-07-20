@@ -14,12 +14,13 @@ A Windows installation
 
 In the root directory:
 
-```go build```
+```go build -ldflags -H=windowsgui```
 
 ```PoELogoutReplay.exe```
+This will run the app in the system tray where it can be closed.
 
 For more options please run ```PoELogoutReplay.exe --help```
 
 # TODO
 * Test on different systems for device/interface/process grabbing.
-* Hide cmd window and make it a tray appilcation
+* Make system tray prettier
