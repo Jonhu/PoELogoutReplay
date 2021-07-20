@@ -10,7 +10,10 @@ This tool can be used in conjunction with [Lutbot](http://lutbot.com/#/) to incr
 
 A Windows installation
 
-# Usage
+# Download
+Here: https://github.com/Jonhu/PoELogoutReplay/releases
+
+# Building
 
 In the root directory:
 
