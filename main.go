@@ -45,17 +45,17 @@ func onReady() {
 		select {
 		case <-mQuit.ClickedCh:
 			systray.Quit()
+			done <- true
 		}
 	}()
 }
 
 func onExit() {
-	done <- true
 	os.Exit(0)
 }
 
 func main() {
-	systray.Run(onReady, onExit)
+	go systray.Run(onReady, onExit)
 
 	flushDuration := flag.Duration("fl", 69*time.Millisecond, "flush duration of pcap capture")
 	repeats := flag.Int("r", 3, "amount of logout repeats")
@@ -72,7 +72,7 @@ func main() {
 	filter := *filterStr
 	ticker := time.NewTicker(*instancePollDur)
 	defer ticker.Stop()
-	done := make(chan bool)
+	done := make(chan bool, 1)
 	i := make(chan struct{}, 3)
 	init := false
 	previousBinding := poeBinding{}
@@ -89,7 +89,6 @@ func main() {
 	for {
 		select {
 		case <-done:
-			systray.Quit()
 			return
 		case <-ticker.C:
 			binding = findPoeBinding()
