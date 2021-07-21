@@ -5,6 +5,8 @@ The program runs in the background, captures a logout packet to the PoE server a
 Please be polite with the amount of packets that are sent to the servers.
 
 This tool can be used in conjunction with [Lutbot](http://lutbot.com/#/) to increase the probability to log out on a patchy connection.
+You can add it to the macro.ahk from Lutbot by adding: "run, %A_MyDocuments%\AutoHotKey\LutTools\PoELogoutReplay_v0.11.exe" after "RunWait, verify.ahk" and moving the PoELogoutReplay_v0.11.exe to "C:\Users\%USER%\Documents\AutoHotKey\LutTools"
+
 # Requirements
 [npcap](https://nmap.org/npcap/)
 
