@@ -13,6 +13,7 @@ import (
 	"os"
 	"os/exec"
 	"os/signal"
+	"path/filepath"
 	"runtime"
 	"syscall"
 	"time"
@@ -226,14 +227,18 @@ func getAndRunNewestVersion() {
 			return
 		}
 		defer resp.Body.Close()
+		ex, _ := os.Executable()
+		exPath, _ := filepath.Abs(ex)
+		fmt.Print("Current Executable path: " + exPath)
 		log.Printf("Old checksum: %v", hashExe())
-		err = update.Apply(resp.Body, update.Options{})
+		err = update.Apply(resp.Body, update.Options{TargetPath: exPath})
 		if err != nil {
 			updateError(fmt.Sprintf("update exe failed with %s", err.Error()))
 			return
 		} else {
 			log.Printf("New checksum: %v", hashExe())
 			log.Printf("PoELogoutReplay updated! release notes: %s", *releases[0].HTMLURL)
+			time.Sleep(5 * time.Second)
 			restartProgram() //restarts for hot reload
 		}
 	}
