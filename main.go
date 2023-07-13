@@ -251,6 +251,7 @@ func restartProgram(args ...string) {
 	err := cmd.Start()
 	if err != nil {
 		log.Printf("gracefulRestart: Failed to launch, error: %v", err)
+		return
 	}
 	time.Sleep(1 * time.Second)
 	onExit()
