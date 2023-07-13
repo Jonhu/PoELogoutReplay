@@ -238,7 +238,6 @@ func getAndRunNewestVersion() {
 		} else {
 			log.Printf("New checksum: %v", hashExe())
 			log.Printf("PoELogoutReplay updated! release notes: %s", *releases[0].HTMLURL)
-			time.Sleep(5 * time.Second)
 			restartProgram() //restarts for hot reload
 		}
 	}
@@ -252,6 +251,7 @@ func restartProgram(args ...string) {
 	if err != nil {
 		log.Printf("gracefulRestart: Failed to launch, error: %v", err)
 	}
+	time.Sleep(1 * time.Second)
 	onExit()
 }
 
