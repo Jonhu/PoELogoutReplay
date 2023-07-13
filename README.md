@@ -22,11 +22,12 @@ Here: https://github.com/Jonhu/PoELogoutReplay/releases
 
 Note that this tool will automatically try to update a new version as it wants to be as unintrusive as possible.
 On demand I can build an option to automatically update but would have to intrude to tell you that a new update is there.
+You can build it yourself without the  ```windowsgui``` flag to have the commandline pop up all the time for a workaround.
 # Building
 
 In the root directory:
 
-```go build -ldflags -H=windowsgui```
+```go build -ldflags -H=windowsgui -o PoELogoutReplay.exe```
 
 ```PoELogoutReplay.exe```
 This will run the app in the system tray where it can be closed.
@@ -35,3 +36,4 @@ For more options please run ```PoELogoutReplay.exe --help```
 
 # TODO
 * Test on different systems for device/interface/process grabbing.
+* Disallow multiple instances of PoELogoutReplay
