@@ -130,7 +130,7 @@ func main() {
 func findPoeBinding() poeBinding {
 	devices, err := pcap.FindAllDevs()
 	if err != nil {
-		log.Printf("error getting devices: %v", err)
+		log.Printf("Error getting devices: %v", err)
 		return poeBinding{}
 	}
 
@@ -247,7 +247,7 @@ func getAndRunNewestVersion() {
 //creates child and abandons it afterwards
 func restartProgram(args ...string) {
 	log.Print("PoELogoutReplay restart...")
-	cmd := exec.Command(EXE, flag.Args()...)
+	cmd := exec.Command(EXE, args...)
 	err := cmd.Start()
 	if err != nil {
 		log.Printf("gracefulRestart: Failed to launch, error: %v", err)
