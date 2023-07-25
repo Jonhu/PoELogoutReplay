@@ -36,4 +36,4 @@ For more options please run ```PoELogoutReplay.exe --help```
 
 # TODO
 * Test on different systems for device/interface/process grabbing.
-* Disallow multiple instances of PoELogoutReplay
+* Test with mock PoE server to see if packets are actually received
